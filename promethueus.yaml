@@ -1,0 +1,43 @@
+grafana:
+  service:
+    type: LoadBalancer
+    loadBalancerIP: 10.1.4.248
+  adminUser: admin
+  adminPassword: "basically i'm a watch mechanic"
+  ingress:
+    enabled: false
+
+prometheus:
+  service:
+    type: LoadBalancer
+    loadBalancerIP: 10.1.4.247
+
+  prometheusSpec:
+    # leave selectors as default, or adjust if you have custom ServiceMonitor/PodMonitor setup
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+
+    # Add additional scrape configs for external node exporter(s)
+    additionalScrapeConfigs:
+    - job_name: 'external-node-exporters'
+      static_configs:
+        - targets:
+            # - '10.1.4.11:9100'
+            - '10.1.11.191:9100'
+            - '10.1.11.192:9100'
+            - '10.1.11.193:9100'
+            - '10.1.11.194:9100'
+            - '10.1.11.195:9100'
+            - '10.1.11.196:9100'
+            - '10.1.11.197:9100'
+            - '10.1.11.198:9100'
+            - '10.1.11.199:9100'
+            - '10.1.11.200:9100'
+      # optional: add labels
+      # labels:
+      #   role: external-node-exporter
+
+
+
+alertmanager:
+  enabled: true

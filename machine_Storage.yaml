@@ -1,0 +1,21 @@
+---
+- name: Check machine reachability and disk usage
+  hosts: all
+  gather_facts: yes
+  tasks:
+
+    - name: Check if machine is reachable
+      ping:
+
+    - name: Get disk usage
+      shell: df -h / | awk 'NR==2 {print $5}' | sed 's/%//'
+      register: disk_usage
+
+    - name: Display disk usage
+      debug:
+        msg: "Disk usage is {{ disk_usage.stdout }}%"
+
+    - name: Warn if disk usage is above 80%
+      debug:
+        msg: "WARNING: High disk usage detected - {{ disk_usage.stdout }}%"
+      when: disk_usage.stdout|int > 80

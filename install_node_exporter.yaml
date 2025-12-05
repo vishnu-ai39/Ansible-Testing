@@ -1,0 +1,66 @@
+---
+- name: Install and configure Node Exporter
+  hosts: all
+  become: true
+  vars:
+    node_exporter_version: "1.10.2"
+    node_exporter_dir: "/opt/node_exporter"
+
+  tasks:
+
+    - name: Download Node Exporter tar.gz
+      ansible.builtin.get_url:
+        url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+        dest: "/tmp/node_exporter.tar.gz"
+        mode: '0644'
+
+    - name: Extract Node Exporter archive
+      ansible.builtin.unarchive:
+        src: "/tmp/node_exporter.tar.gz"
+        dest: "/tmp/"
+        remote_src: yes
+
+    - name: Create /opt/node_exporter directory
+      ansible.builtin.file:
+        path: "{{ node_exporter_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy Node Exporter binaries to /opt/node_exporter
+      ansible.builtin.copy:
+        src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/"
+        dest: "{{ node_exporter_dir }}"
+        owner: root
+        group: root
+        mode: '0755'
+        remote_src: yes
+
+    - name: Create systemd service file for Node Exporter
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/node_exporter.service
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Node Exporter
+          After=network.target
+
+          [Service]
+          User=root
+          Group=root
+          ExecStart={{ node_exporter_dir }}/node_exporter
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Enable and start Node Exporter service
+      ansible.builtin.systemd:
+        name: node_exporter
+        state: restarted
+        enabled: true
