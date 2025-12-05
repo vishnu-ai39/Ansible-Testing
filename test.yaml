@@ -1,9 +1,9 @@
 all:
   hosts:
     windows_machine:
-      ansible_host: 192.168.3.11
+      ansible_host: 192.168.x.x
       ansible_user: aggregate
-      ansible_password: '@ggreg@te'
+      ansible_password: '########'
       ansible_connection: winrm
       ansible_winrm_transport: ntlm
       ansible_winrm_server_cert_validation: ignore
